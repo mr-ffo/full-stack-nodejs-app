@@ -1,0 +1,26 @@
+{
+  "name": "folarin-devops-practices",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "nodemon server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.896.0",
+    "@aws-sdk/lib-dynamodb": "^3.896.0",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^17.2.2",
+    "express": "~4.16.1",
+    "express-handlebars": "^8.0.3",
+    "express-session": "^1.18.2",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "nodemon": "^3.1.10"
+  }
+}
