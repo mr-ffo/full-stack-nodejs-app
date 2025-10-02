@@ -101,7 +101,7 @@ app.post('/signout', (req, res) => {
     req.session.destroy(() => res.redirect('/signin'));
 });
 
-// Second GitHub Actions CI/CD test run
+// third GitHub Actions CI/CD test run
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server is live on port ${port}`));

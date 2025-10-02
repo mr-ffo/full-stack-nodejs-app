@@ -2,11 +2,15 @@ name: CI/CD to ECS
 
 on:
   push:
-    branches: [ "master" ]   # run when pushing to master
+    branches: [ "master" ]   # Run only when pushing to master branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:   # Keep non-sensitive values here
+      ECR_REPOSITORY: folarin-devops-practice   # your repo name in ECR
+      AWS_REGION: us-east-1                     # your AWS region
 
     steps:
       - name: Checkout code
@@ -17,7 +21,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Log in to Amazon ECR
         id: login-ecr
@@ -26,9 +30,11 @@ jobs:
       - name: Build, tag, and push image to ECR
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker build -t ${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG .
-          docker tag ${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
+          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+
+          echo "Building and pushing image: $IMAGE_URI"
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
 
       - name: Deploy ECS Service
         run: |
