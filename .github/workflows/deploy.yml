@@ -39,6 +39,6 @@ jobs:
       - name: Deploy ECS Service
         run: |
           aws ecs update-service \
-            --cluster ${{ secrets.ECS_CLUSTER }} \
-            --service ${{ secrets.ECS_SERVICE }} \
+             --cluster folarin-devops-cluster \
+            --service folarin-devops-task-service-mo19o74h \
             --force-new-deployment
