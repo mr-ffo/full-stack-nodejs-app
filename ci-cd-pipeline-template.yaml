@@ -1,0 +1,331 @@
+---
+Metadata:
+  AWSToolsMetrics:
+    IaC_Generator: "arn:aws:cloudformation:us-east-1:938586302001:generatedTemplate/63cb0521-0da6-4259-af0b-11acf71be979"
+Resources:
+  EC2SubnetRn:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Delete"
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: "vpc-0cc51cae6b79ee4bb"
+      AvailabilityZoneId: "use1-az4"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "172.31.16.0/20"
+      Ipv6Native: false
+      Tags: []
+  IAMRoleEcsTaskExecutionRole:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::IAM::Role"
+    DeletionPolicy: "Delete"
+    Properties:
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      MaxSessionDuration: 3600
+      RoleName: "ecsTaskExecutionRole"
+      AssumeRolePolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service: "ecs-tasks.amazonaws.com"
+            Sid: ""
+  ECSClusterCapacityProviderAssociationsFolarindevopscluster:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::ECS::ClusterCapacityProviderAssociations"
+    DeletionPolicy: "Delete"
+    Properties:
+      CapacityProviders:
+        - "FARGATE"
+        - "FARGATE_SPOT"
+      Cluster: "folarin-devops-cluster"
+      DefaultCapacityProviderStrategy: []
+  ECSTaskDefinitionTaskdefinitionfolarindevopstask1:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::ECS::TaskDefinition"
+    DeletionPolicy: "Delete"
+    Properties:
+      InferenceAccelerators: []
+      Memory: "1024"
+      PlacementConstraints: []
+      Cpu: "512"
+      RequiresCompatibilities:
+        - "FARGATE"
+      NetworkMode: "awsvpc"
+      EnableFaultInjection: false
+      ExecutionRoleArn:
+        Fn::GetAtt:
+          - "IAMRoleEcsTaskExecutionRole"
+          - "Arn"
+      RuntimePlatform:
+        OperatingSystemFamily: "LINUX"
+        CpuArchitecture: "X86_64"
+      Volumes: []
+      ContainerDefinitions:
+        - ExtraHosts: []
+          Secrets: []
+          VolumesFrom: []
+          Cpu: 0
+          EntryPoint: []
+          DnsServers: []
+          Image: "938586302001.dkr.ecr.us-east-1.amazonaws.com/folarin-devops-practice:latest"
+          Essential: true
+          LogConfiguration:
+            SecretOptions: []
+            Options:
+              awslogs-group: "/ecs/folarin-devops-task"
+              awslogs-create-group: "true"
+              awslogs-region: "us-east-1"
+              awslogs-stream-prefix: "ecs"
+            LogDriver: "awslogs"
+          ResourceRequirements: []
+          EnvironmentFiles: []
+          Name: "node-auth-container"
+          MountPoints: []
+          DependsOn: []
+          DockerLabels: {}
+          PortMappings:
+            - ContainerPort: 3000
+              AppProtocol: "http"
+              Protocol: "tcp"
+              HostPort: 3000
+              Name: "node-auth-container-3000-tcp"
+          DockerSecurityOptions: []
+          SystemControls: []
+          Command: []
+          DnsSearchDomains: []
+          Environment: []
+          Links: []
+          CredentialSpecs: []
+          Ulimits: []
+      Family: "folarin-devops-task"
+      Tags: []
+  EC2Subnet:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Delete"
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: "vpc-0cc51cae6b79ee4bb"
+      AvailabilityZoneId: "use1-az5"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "172.31.64.0/20"
+      Ipv6Native: false
+      Tags: []
+  IAMUserGithubactionsci:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::IAM::User"
+    DeletionPolicy: "Delete"
+    Properties:
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+      UserName: "github-actions-ci"
+  EC2SubnetCr:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Delete"
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: "vpc-0cc51cae6b79ee4bb"
+      AvailabilityZoneId: "use1-az6"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "172.31.32.0/20"
+      Ipv6Native: false
+      Tags: []
+  IAMRoleAWSServiceRoleForECS:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::IAM::Role"
+    DeletionPolicy: "Delete"
+    Properties:
+      Path: "/aws-service-role/ecs.amazonaws.com/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/aws-service-role/AmazonECSServiceRolePolicy"
+      MaxSessionDuration: 3600
+      RoleName: "AWSServiceRoleForECS"
+      Description: "Policy to enable Amazon ECS to manage your EC2 instances and related\
+        \ resources."
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service: "ecs.amazonaws.com"
+  IAMManagedPolicyPolicyserviceroleCodeBuildCloudWatchLogsPolicyfavourdevopscicduseast1:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::IAM::ManagedPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      ManagedPolicyName: "CodeBuildCloudWatchLogsPolicy-favour-devops-cicd-us-east-1"
+      Path: "/service-role/"
+      Description: "Policy used in trust relationship with CodeBuild"
+      Groups: []
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Resource:
+              - "arn:aws:logs:us-east-1:938586302001:log-group:/aws/codebuild/nextwork-devops-cicd"
+              - "arn:aws:logs:us-east-1:938586302001:log-group:/aws/codebuild/nextwork-devops-cicd:*"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Effect: "Allow"
+      Roles: []
+      Users: []
+  IAMUserFolarinFavour:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::IAM::User"
+    DeletionPolicy: "Delete"
+    Properties:
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/IAMUserChangePassword"
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+      Policies:
+        - PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Resource: "*"
+                Action: "*"
+                Effect: "Allow"
+              - Resource: "*"
+                Action:
+                  - "aws-portal:*"
+                  - "budgets:*"
+                  - "ce:*"
+                  - "cur:*"
+                  - "pricing:*"
+                Effect: "Allow"
+          PolicyName: "full-access"
+      UserName: "Folarin_Favour"
+      LoginProfile:
+        PasswordResetRequired: false
+  DynamoDBTableUsers:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::DynamoDB::Table"
+    DeletionPolicy: "Delete"
+    Properties:
+      SSESpecification:
+        SSEEnabled: false
+      TableName: "Users"
+      AttributeDefinitions:
+        - AttributeType: "S"
+          AttributeName: "email"
+      ContributorInsightsSpecification:
+        Enabled: false
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      WarmThroughput:
+        ReadUnitsPerSecond: 12000
+        WriteUnitsPerSecond: 4000
+      KeySchema:
+        - KeyType: "HASH"
+          AttributeName: "email"
+      DeletionProtectionEnabled: false
+      TableClass: "STANDARD"
+      Tags: []
+      TimeToLiveSpecification:
+        Enabled: false
+  EC2SubnetMT:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Delete"
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: "vpc-0cc51cae6b79ee4bb"
+      AvailabilityZoneId: "use1-az1"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "172.31.0.0/20"
+      Ipv6Native: false
+      Tags: []
+  EC2SubnetEi:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Delete"
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: "vpc-0cc51cae6b79ee4bb"
+      AvailabilityZoneId: "use1-az2"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "172.31.80.0/20"
+      Ipv6Native: false
+      Tags: []
+  ECRRepositoryFolarindevopspractice:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::ECR::Repository"
+    DeletionPolicy: "Delete"
+    Properties:
+      ImageScanningConfiguration:
+        ScanOnPush: false
+      RepositoryName: "folarin-devops-practice"
+      EncryptionConfiguration:
+        EncryptionType: "AES256"
+      Tags: []
+      ImageTagMutability: "MUTABLE"
+  EC2SubnetWV:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Delete"
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: "vpc-0cc51cae6b79ee4bb"
+      AvailabilityZoneId: "use1-az3"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: "172.31.48.0/20"
+      Ipv6Native: false
+      Tags: []
+  IAMManagedPolicyPolicyserviceroleCodeBuildCodeConnectionsSourceCredentialsPolicyfavourdevopscicduseast1938586302001:
+    UpdateReplacePolicy: "Delete"
+    Type: "AWS::IAM::ManagedPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      ManagedPolicyName: "CodeBuildCodeConnectionsSourceCredentialsPolicy-favour-devops-cicd-us-east-1-938586302001"
+      Path: "/service-role/"
+      Description: "Policy used in trust relationship with CodeBuild"
+      Groups: []
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Resource:
+              - "arn:aws:codestar-connections:us-east-1:938586302001:connection/020c65f4-3293-4627-84f1-17cf8685eb48"
+              - "arn:aws:codeconnections:us-east-1:938586302001:connection/020c65f4-3293-4627-84f1-17cf8685eb48"
+            Action:
+              - "codestar-connections:GetConnectionToken"
+              - "codestar-connections:GetConnection"
+              - "codeconnections:GetConnectionToken"
+              - "codeconnections:GetConnection"
+              - "codeconnections:UseConnection"
+            Effect: "Allow"
+      Roles: []
+      Users: []
