@@ -113,4 +113,4 @@ app.post('/signout', (req, res) => {
 // third GitHub Actions CI/CD test run
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server is live on port ${port}`));
+app.listen(port, () => console.log(`Server is active on port ${port}`));
