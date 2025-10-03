@@ -1,0 +1,198 @@
+
+  AWSTemplateFormatVersion: "2010-09-09"
+  Description: "CI/CD Infrastructure for Node.js Auth App on ECS Fargate"
+
+  Resources:
+
+    ### VPC & Networking ###
+    VPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: 10.0.0.0/16
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        Tags:
+          - Key: Name
+            Value: FolarinDevopsVPC
+
+    PublicSubnet1:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        CidrBlock: 10.0.1.0/24
+        MapPublicIpOnLaunch: true
+        AvailabilityZone: !Select [0, !GetAZs ""]
+        Tags:
+          - Key: Name
+            Value: PublicSubnet1
+
+    PublicSubnet2:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        CidrBlock: 10.0.2.0/24
+        MapPublicIpOnLaunch: true
+        AvailabilityZone: !Select [1, !GetAZs ""]
+        Tags:
+          - Key: Name
+            Value: PublicSubnet2
+
+    InternetGateway:
+      Type: AWS::EC2::InternetGateway
+
+    VPCGatewayAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId: !Ref VPC
+        InternetGatewayId: !Ref InternetGateway
+
+    RouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref VPC
+
+    Route:
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId: !Ref RouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId: !Ref InternetGateway
+
+    SubnetRouteTableAssociation1:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnet1
+        RouteTableId: !Ref RouteTable
+
+    SubnetRouteTableAssociation2:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnet2
+        RouteTableId: !Ref RouteTable
+
+    ### ECS Cluster ###
+    ECSCluster:
+      Type: AWS::ECS::Cluster
+      Properties:
+        ClusterName: folarin-devops-cluster
+
+    ### ECR Repository ###
+    ECRRepository:
+      Type: AWS::ECR::Repository
+      Properties:
+        RepositoryName: folarin-devops-practice
+        ImageTagMutability: MUTABLE
+
+    ### IAM Roles ###
+    ECSTaskExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ecsTaskExecutionRole
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: ecs-tasks.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+    ### ECS Task Definition ###
+    TaskDefinition:
+      Type: AWS::ECS::TaskDefinition
+      Properties:
+        Family: folarin-devops-task
+        Cpu: "512"
+        Memory: "1024"
+        NetworkMode: awsvpc
+        RequiresCompatibilities: [FARGATE]
+        ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+        ContainerDefinitions:
+          - Name: node-auth-container
+            Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/folarin-devops-practice:latest"
+            PortMappings:
+              - ContainerPort: 3000
+            LogConfiguration:
+              LogDriver: awslogs
+              Options:
+                awslogs-group: /ecs/folarin-devops-task
+                awslogs-region: !Ref AWS::Region
+                awslogs-stream-prefix: ecs
+
+    ### DynamoDB Users Table ###
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Users
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+
+    ### Security Group ###
+    AppSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Allow HTTP traffic
+        VpcId: !Ref VPC
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
+
+    ### Load Balancer ###
+    LoadBalancer:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Subnets:
+          - !Ref PublicSubnet1
+          - !Ref PublicSubnet2
+        SecurityGroups:
+          - !Ref AppSecurityGroup
+
+    TargetGroup:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Port: 80
+        Protocol: HTTP
+        VpcId: !Ref VPC
+        TargetType: ip
+        HealthCheckPath: /
+
+    Listener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref TargetGroup
+        LoadBalancerArn: !Ref LoadBalancer
+        Port: 80
+        Protocol: HTTP
+
+    ### ECS Service ###
+    ECSService:
+      Type: AWS::ECS::Service
+      Properties:
+        Cluster: !Ref ECSCluster
+        ServiceName: folarin-devops-service
+        TaskDefinition: !Ref TaskDefinition
+        DesiredCount: 2
+        LaunchType: FARGATE
+        NetworkConfiguration:
+          AwsvpcConfiguration:
+            AssignPublicIp: ENABLED
+            Subnets:
+              - !Ref PublicSubnet1
+              - !Ref PublicSubnet2
+            SecurityGroups:
+              - !Ref AppSecurityGroup
+        LoadBalancers:
+          - ContainerName: node-auth-container
+            ContainerPort: 3000
+            TargetGroupArn: !Ref TargetGroup
+
