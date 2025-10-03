@@ -8,6 +8,8 @@ import { DynamoDBDocumentClient, PutCommand, GetCommand } from '@aws-sdk/lib-dyn
 import { engine } from 'express-handlebars';
 
 const app = express();
+import cors from 'cors';
+app.use(cors());
 
 // Handlebars setup (using .hbs extension)
 app.engine('hbs', engine({ extname: '.hbs' }));
@@ -27,12 +29,19 @@ const TABLE = process.env.DDB_TABLE || 'Users';
 
 // Routes
 app.get('/', (req, res) => {
-    if (!req.session.user) return res.redirect('/signin');
+    if (!req.session.user) return res.redirect('/signup');
     res.render('index', { user: req.session.user });
 });
 
 app.get('/signup', (_, res) => res.render('register'));
 app.get('/signin', (_, res) => res.render('register'));
+
+// so an ALB or health check can hit a stable endpoint:
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+
 
 /**
  * SIGNUP
